@@ -1,0 +1,92 @@
+{
+  "version": "1.0",
+  "disease": "infection_respiratoire",
+  "locale": "fr",
+  "root": "cough_present",
+  "outcomes": {
+    "no_pneumonia": {
+      "label": "Toux ou Rhume (pas de pneumonie)",
+      "urgency": "low",
+      "action": "Pas d'antibiotique. Conseils: liquides, dégager nez. Réévaluer si >14 jours ou aggravation.",
+      "protocol_id": "ARI_TREATMENT"
+    },
+    "pneumonia": {
+      "label": "Pneumonie",
+      "urgency": "medium",
+      "action": "Amoxicilline 40-50mg/kg/jour x5j. Paracétamol si fièvre. Revoir à J3.",
+      "protocol_id": "ARI_TREATMENT"
+    },
+    "severe_pneumonia": {
+      "label": "Pneumonie Grave",
+      "urgency": "high",
+      "action": "RÉFÉRER IMMÉDIATEMENT. Tirage sévère, cyanose ou incapacité à boire = urgence vitale.",
+      "protocol_id": "ARI_TREATMENT"
+    }
+  },
+  "nodes": {
+    "cough_present": {
+      "type": "question",
+      "text": "L'enfant a-t-il de la toux ou une difficulté à respirer?",
+      "input": {"type": "boolean"},
+      "next": {"true": "age_check", "false": "end_no_cough"}
+    },
+    "end_no_cough": {
+      "type": "outcome",
+      "outcome": "no_pneumonia"
+    },
+    "age_check": {
+      "type": "question",
+      "text": "Quel est l'âge de l'enfant (en mois)?",
+      "help": "Nécessaire pour évaluer la fréquence respiratoire",
+      "input": {"type": "numeric", "range": [0, 180]},
+      "next": "count_respirations"
+    },
+    "count_respirations": {
+      "type": "action",
+      "text": "Compter les respirations pendant 1 minute (enfant calme)",
+      "next": "respiration_rate"
+    },
+    "respiration_rate": {
+      "type": "question",
+      "text": "Fréquence respiratoire (respirations/minute)",
+      "input": {"type": "numeric", "range": [0, 120]},
+      "next": "danger_signs"
+    },
+    "danger_signs": {
+      "type": "multi_select",
+      "text": "Signes présents",
+      "options": [
+        {"code": "chest_indrawing", "label": "Tirage thoracique"},
+        {"code": "stridor", "label": "Stridor au repos"},
+        {"code": "unable_drink", "label": "Incapacité à boire/téter"},
+        {"code": "vomits_everything", "label": "Vomit tout"},
+        {"code": "convulsions", "label": "Convulsions"},
+        {"code": "lethargic", "label": "Léthargique/inconscient"},
+        {"code": "severe_malnutrition", "label": "Malnutrition sévère visible"}
+      ],
+      "next": "classify_severity"
+    },
+    "classify_severity": {
+      "type": "logic",
+      "rules": [
+        {"if_any_symptom": ["stridor", "unable_drink", "convulsions", "lethargic", "severe_malnutrition"], "set_flag": "severe"},
+        {"if_symptom": "chest_indrawing", "set_flag": "chest_indrawing_present"}
+      ],
+      "next": "evaluate_fast_breathing"
+    },
+    "evaluate_fast_breathing": {
+      "type": "logic",
+      "note": "Respiration rapide par âge: <2m=60+, 2-11m=50+, 12-59m=40+",
+      "next": "final_decision"
+    },
+    "final_decision": {
+      "type": "decision",
+      "branches": [
+        {"when_flag": "severe", "outcome": "severe_pneumonia"},
+        {"when_flag": "chest_indrawing_present", "outcome": "severe_pneumonia"},
+        {"when_flag": "fast_breathing", "outcome": "pneumonia"},
+        {"default": true, "outcome": "no_pneumonia"}
+      ]
+    }
+  }
+}

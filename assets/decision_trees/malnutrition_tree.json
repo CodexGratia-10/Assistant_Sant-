@@ -1,0 +1,97 @@
+{
+  "version": "1.0",
+  "disease": "malnutrition",
+  "locale": "fr",
+  "root": "muac_available",
+  "outcomes": {
+    "no_malnutrition": {
+      "label": "Pas de malnutrition aiguë",
+      "urgency": "low",
+      "action": "Conseils nutritionnels. Promouvoir allaitement exclusif <6m, diversification >6m.",
+      "protocol_id": "MALNUTRITION_SCREENING"
+    },
+    "moderate_malnutrition": {
+      "label": "Malnutrition Aiguë Modérée (MAM)",
+      "urgency": "medium",
+      "action": "Référer au centre de récupération nutritionnelle. Aliments thérapeutiques prêts à l'emploi.",
+      "protocol_id": "MALNUTRITION_SCREENING"
+    },
+    "severe_malnutrition": {
+      "label": "Malnutrition Aiguë Sévère (MAS)",
+      "urgency": "high",
+      "action": "RÉFÉRER IMMÉDIATEMENT. Risque vital élevé. Nécessite prise en charge spécialisée.",
+      "protocol_id": "MALNUTRITION_SCREENING"
+    }
+  },
+  "nodes": {
+    "muac_available": {
+      "type": "question",
+      "text": "Pouvez-vous mesurer le périmètre brachial (PB/MUAC)?",
+      "help": "Utiliser le ruban PB au milieu du bras gauche",
+      "input": {"type": "boolean"},
+      "next": {"true": "measure_muac", "false": "visual_assessment"}
+    },
+    "measure_muac": {
+      "type": "question",
+      "text": "Périmètre brachial en cm",
+      "help": "Zone rouge <11.5cm, jaune 11.5-12.5cm, verte >12.5cm",
+      "input": {"type": "numeric", "range": [8, 20], "decimals": 1},
+      "next": "check_edema"
+    },
+    "visual_assessment": {
+      "type": "multi_select",
+      "text": "Signes visuels présents",
+      "options": [
+        {"code": "very_thin", "label": "Très maigre (côtes, os visibles)"},
+        {"code": "muscle_wasting", "label": "Fonte musculaire"},
+        {"code": "skin_loose", "label": "Peau flétrie"},
+        {"code": "no_signs", "label": "Pas de signes évidents"}
+      ],
+      "next": "check_edema"
+    },
+    "check_edema": {
+      "type": "question",
+      "text": "Œdème des deux pieds?",
+      "help": "Presser sur le dos du pied pendant 3 secondes. Œdème = empreinte qui persiste",
+      "input": {"type": "boolean"},
+      "next": {"true": "edema_severity", "false": "appetite_test"}
+    },
+    "edema_severity": {
+      "type": "question",
+      "text": "Grade de l'œdème",
+      "options": [
+        {"code": "grade_1", "label": "Grade 1 (pieds seulement)"},
+        {"code": "grade_2", "label": "Grade 2 (pieds + jambes)"},
+        {"code": "grade_3", "label": "Grade 3 (généralisé + visage)"}
+      ],
+      "input": {"type": "select"},
+      "next": "appetite_test"
+    },
+    "appetite_test": {
+      "type": "question",
+      "text": "L'enfant a-t-il de l'appétit?",
+      "help": "Offrir ATPE ou nourriture. Refuse = mauvais signe",
+      "input": {"type": "boolean"},
+      "next": "classify_malnutrition"
+    },
+    "classify_malnutrition": {
+      "type": "logic",
+      "rules": [
+        {"if_answer": {"muac": "<11.5"}, "set_flag": "severe"},
+        {"if_any_symptom": ["grade_2", "grade_3"], "set_flag": "severe"},
+        {"if_symptom": "grade_1", "set_flag": "moderate"},
+        {"if_any_symptom": ["very_thin", "muscle_wasting"], "set_flag": "moderate"}
+      ],
+      "note": "MUAC 11.5-12.5cm = MAM détecté par mesure directe",
+      "next": "final_decision"
+    },
+    "final_decision": {
+      "type": "decision",
+      "branches": [
+        {"when_flag": "severe", "outcome": "severe_malnutrition"},
+        {"when_flag": "moderate", "outcome": "moderate_malnutrition"},
+        {"default": true, "outcome": "no_malnutrition"}
+      ]
+    }
+  }
+}

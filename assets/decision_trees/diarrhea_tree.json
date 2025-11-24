@@ -1,0 +1,86 @@
+{
+  "version": "1.0",
+  "disease": "diarrhee",
+  "locale": "fr",
+  "root": "diarrhea_present",
+  "outcomes": {
+    "plan_a": {
+      "label": "Plan A - Traitement à domicile",
+      "urgency": "low",
+      "action": "SRO après chaque selle + Zinc 10-20mg/jour x10j. Continuer alimentation. Réévaluer si aggravation.",
+      "protocol_id": "DIARRHEA_TREATMENT"
+    },
+    "plan_b": {
+      "label": "Plan B - Déshydratation modérée",
+      "urgency": "medium",
+      "action": "SRO 75ml/kg sur 4h. Surveillance étroite. Si pas d'amélioration ou aggravation → référer.",
+      "protocol_id": "DIARRHEA_TREATMENT"
+    },
+    "plan_c": {
+      "label": "Plan C - Déshydratation sévère",
+      "urgency": "high",
+      "action": "RÉFÉRER IMMÉDIATEMENT pour réhydratation intraveineuse. Danger vital.",
+      "protocol_id": "DIARRHEA_TREATMENT"
+    }
+  },
+  "nodes": {
+    "diarrhea_present": {
+      "type": "question",
+      "text": "L'enfant a-t-il la diarrhée?",
+      "help": "3 selles liquides ou plus par jour",
+      "input": {"type": "boolean"},
+      "next": {"true": "duration_check", "false": "end_no_diarrhea"}
+    },
+    "end_no_diarrhea": {
+      "type": "outcome",
+      "outcome": "plan_a",
+      "criteria": ["no_diarrhea"]
+    },
+    "duration_check": {
+      "type": "question",
+      "text": "Depuis combien de jours?",
+      "input": {"type": "numeric", "range": [0, 30]},
+      "next": "blood_in_stool"
+    },
+    "blood_in_stool": {
+      "type": "question",
+      "text": "Y a-t-il du sang dans les selles?",
+      "input": {"type": "boolean"},
+      "next": {"true": "refer_bloody", "false": "assess_hydration"}
+    },
+    "refer_bloody": {
+      "type": "outcome",
+      "outcome": "plan_c",
+      "criteria": ["dysentery"]
+    },
+    "assess_hydration": {
+      "type": "multi_select",
+      "text": "Signes de déshydratation présents",
+      "options": [
+        {"code": "lethargic", "label": "Léthargique/inconscient"},
+        {"code": "sunken_eyes", "label": "Yeux enfoncés"},
+        {"code": "drinks_poorly", "label": "Boit mal ou pas du tout"},
+        {"code": "drinks_eagerly", "label": "Boit avidement (très assoiffé)"},
+        {"code": "skin_pinch_slow", "label": "Pli cutané s'efface lentement"},
+        {"code": "skin_pinch_very_slow", "label": "Pli cutané s'efface très lentement"}
+      ],
+      "next": "classify_dehydration"
+    },
+    "classify_dehydration": {
+      "type": "logic",
+      "rules": [
+        {"if_any_symptom": ["lethargic", "skin_pinch_very_slow"], "set_flag": "severe_dehydration"},
+        {"if_count_symptoms": {"min": 2, "symptoms": ["sunken_eyes", "drinks_poorly", "skin_pinch_slow"]}, "set_flag": "moderate_dehydration"}
+      ],
+      "next": "final_decision"
+    },
+    "final_decision": {
+      "type": "decision",
+      "branches": [
+        {"when_flag": "severe_dehydration", "outcome": "plan_c"},
+        {"when_flag": "moderate_dehydration", "outcome": "plan_b"},
+        {"default": true, "outcome": "plan_a"}
+      ]
+    }
+  }
+}

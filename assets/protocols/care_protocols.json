@@ -1,0 +1,52 @@
+{
+  "protocols": [
+    {
+      "id": "MALARIA_TREATMENT",
+      "disease": "paludisme",
+      "category": "treatment",
+      "title": "Traitement Paludisme Simple",
+      "keywords": ["paludisme", "traitement", "ACT", "arthémisinine"],
+      "content": "**Traitement recommandé (Ministère Santé Bénin)**\n\n**Combinaison Thérapeutique à base d'Artémisinine (CTA)**\n\n• **Artéméther-Luméfantrine (AL)** - 1ère ligne\n  - Adulte: 4 comprimés 2x/jour pendant 3 jours\n  - Enfant 5-14 ans: 2 comprimés 2x/jour pendant 3 jours\n  - Enfant <5 ans: 1 comprimé 2x/jour pendant 3 jours\n\n• **Avec aliments gras** pour meilleure absorption\n\n**Surveillance**\n- Réévaluer à J3\n- Si persistance fièvre ou aggravation → RÉFÉRER\n\n**Signes d'alerte nécessitant référence immédiate:**\n- Convulsions\n- Incapacité à boire/téter\n- Vomissements répétés\n- Léthargie ou inconscience\n- Détresse respiratoire"
+    },
+    {
+      "id": "MALARIA_PREVENTION",
+      "disease": "paludisme",
+      "category": "prevention",
+      "title": "Prévention Paludisme",
+      "keywords": ["paludisme", "prévention", "moustiquaire", "TPI"],
+      "content": "**Mesures Préventives**\n\n**1. Moustiquaires Imprégnées d'Insecticide (MII)**\n- Dormir sous MII chaque nuit\n- Vérifier intégrité (pas de trous)\n- Ré-imprégner tous les 6-12 mois\n\n**2. Traitement Préventif Intermittent (TPI)**\n- **Femmes enceintes:** SP (Sulfadoxine-Pyriméthamine)\n  - 1ère dose: 2e trimestre (16 semaines)\n  - 2e dose: 3e trimestre (28 semaines)\n  - 3e dose: si possible à 32 semaines\n\n**3. Chimioprophylaxie Saisonnière (CPS)**\n- Enfants 3-59 mois en zone d'endémie saisonnière\n- 4 cycles pendant saison des pluies\n\n**4. Environnement**\n- Éliminer eaux stagnantes\n- Utiliser répulsifs si disponible"
+    },
+    {
+      "id": "DIARRHEA_TREATMENT",
+      "disease": "diarrhee",
+      "category": "treatment",
+      "title": "Prise en Charge Diarrhée",
+      "keywords": ["diarrhée", "déshydratation", "SRO", "zinc"],
+      "content": "**Traitement selon niveau déshydratation**\n\n**Plan A - Pas de déshydratation**\n- SRO à domicile après chaque selle\n  - <2 ans: 50-100 ml\n  - 2-10 ans: 100-200 ml\n  - >10 ans: autant que souhaité\n- Zinc 10-20mg/jour pendant 10-14 jours\n- Continuer alimentation normale\n\n**Plan B - Déshydratation modérée**\n- SRO 75ml/kg sur 4 heures\n- Réévaluer toutes les heures\n- Si amélioration → Plan A\n- Si aggravation → Plan C\n\n**Plan C - Déshydratation sévère**\n🚨 **RÉFÉRER IMMÉDIATEMENT pour réhydratation IV**\n\n**Signes de déshydratation:**\n- Légère: soif, agitation\n- Modérée: yeux enfoncés, pli cutané\n- Sévère: léthargie, perte conscience, pas de larmes\n\n**Zinc - Dosage:**\n- <6 mois: 10mg/jour\n- >6 mois: 20mg/jour"
+    },
+    {
+      "id": "ARI_TREATMENT",
+      "disease": "infection_respiratoire",
+      "category": "treatment",
+      "title": "Infections Respiratoires Aiguës",
+      "keywords": ["toux", "pneumonie", "respiration", "antibiotique"],
+      "content": "**Classification et Traitement**\n\n**Toux ou Rhume Simple**\n- Pas d'antibiotique nécessaire\n- Conseils: liquides abondants, dégager nez\n- Réévaluer si >14 jours\n\n**Pneumonie**\nSignes: respiration rapide, tirage thoracique\n- Amoxicilline 40-50mg/kg/jour en 2 prises x 5 jours\n- Paracétamol si fièvre\n- Suivi à J3\n\n**Pneumonie Grave** 🚨\nSignes: tirage sévère, incapacité boire, cyanose\n→ **RÉFÉRER IMMÉDIATEMENT**\n\n**Fréquence Respiratoire (resp/min):**\n- <2 mois: ≥60 = rapide\n- 2-12 mois: ≥50 = rapide\n- 1-5 ans: ≥40 = rapide\n\n**Signes de danger:**\n- Stridor au repos\n- Incapacité à boire\n- Convulsions, léthargie\n- Malnutrition sévère"
+    },
+    {
+      "id": "MALNUTRITION_SCREENING",
+      "disease": "malnutrition",
+      "category": "diagnosis",
+      "title": "Dépistage Malnutrition",
+      "keywords": ["malnutrition", "MUAC", "PB", "kwashiorkor", "marasme"],
+      "content": "**Dépistage par Périmètre Brachial (PB/MUAC)**\n\n**Enfants 6-59 mois:**\n- **PB ≥ 12,5 cm:** Normal (vert)\n- **PB 11,5-12,4 cm:** MAM - Malnutrition Aiguë Modérée (jaune)\n- **PB < 11,5 cm:** MAS - Malnutrition Aiguë Sévère (rouge)\n\n**Œdèmes bilatéraux:**\n- Présence = Malnutrition aiguë sévère\n- 🚨 **RÉFÉRER immédiatement**\n\n**Prise en Charge MAM (jaune):**\n- Aliments thérapeutiques prêts à l'emploi (ATPE)\n- Suivi hebdomadaire poids\n- Conseils nutritionnels mère\n\n**Prise en Charge MAS (rouge):**\n🚨 **RÉFÉRER au centre de santé**\n- Nécessite ATPE + surveillance médicale\n- Risque complications graves\n\n**Test appétit:**\n- Si refuse ATPE → référer (complication)\n\n**Mesure PB:**\n1. Bras gauche détendu\n2. Repérer mi-distance épaule-coude\n3. Enrouler bracelet MUAC\n4. Lire couleur zone"
+    },
+    {
+      "id": "PREGNANCY_DANGER_SIGNS",
+      "disease": "grossesse",
+      "category": "diagnosis",
+      "title": "Signes de Danger Grossesse",
+      "keywords": ["grossesse", "urgence", "saignement", "éclampsie"],
+      "content": "**Signes nécessitant RÉFÉRENCE URGENTE** 🚨\n\n**Tout Trimestre:**\n- Saignements vaginaux\n- Douleurs abdominales sévères\n- Fièvre persistante >38°C\n- Vomissements incoercibles\n- Œdème visage/mains soudain\n- Maux de tête sévères\n- Troubles vision (flou, éclairs)\n- Convulsions\n\n**3e Trimestre spécifique:**\n- Perte liquide amniotique\n- Diminution mouvements fœtaux\n- Contractions avant terme (<37 sem)\n\n**Pré-éclampsie/Éclampsie:**\n- TA élevée (>140/90)\n- + Protéinurie\n- + Œdème\n- + Maux de tête\n→ **URGENCE VITALE**\n\n**Conseils généraux:**\n- 8 CPN minimum recommandées\n- Supplémentation fer/acide folique\n- TPI paludisme (SP)\n- Accouchement en structure sanitaire\n\n**Facteurs de risque:**\n- <18 ans ou >35 ans\n- Primipare ou grande multipare (>4)\n- Antécédent césarienne\n- Grossesse multiple"
+    }
+  ]
+}

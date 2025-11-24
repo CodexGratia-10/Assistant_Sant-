@@ -1,0 +1,130 @@
+{
+  "version": "1.0",
+  "disease": "paludisme",
+  "locale": "fr",
+  "root": "fever_present",
+  "risk_context": {
+    "endemic_level": "high",
+    "season_factor_weight": 0.2
+  },
+  "outcomes": {
+    "no_malaria": {
+      "label": "Paludisme improbable",
+      "urgency": "none",
+      "action": "Surveiller et réévaluer si fièvre apparaît"
+    },
+    "test_needed": {
+      "label": "Test RDT recommandé",
+      "urgency": "low",
+      "action": "Effectuer un test rapide de diagnostic (RDT)"
+    },
+    "uncomplicated": {
+      "label": "Paludisme simple suspecté",
+      "urgency": "medium",
+      "action": "Administrer traitement antipaludique selon protocole et surveiller"
+    },
+    "severe_referral": {
+      "label": "Suspicion paludisme grave",
+      "urgency": "high",
+      "action": "Référer immédiatement au centre de santé (signes de gravité)"
+    }
+  },
+  "nodes": {
+    "fever_present": {
+      "type": "question",
+      "text": "Le patient a-t-il de la fièvre?",
+      "input": {"type": "boolean"},
+      "next": {"true": "measure_temperature", "false": "end_no_fever"}
+    },
+    "end_no_fever": {
+      "type": "outcome",
+      "outcome": "no_malaria",
+      "criteria": ["no_fever"]
+    },
+    "measure_temperature": {
+      "type": "action",
+      "text": "Mesurer la température avec thermomètre.",
+      "next": "temperature_value"
+    },
+    "temperature_value": {
+      "type": "question",
+      "text": "Température (°C)",
+      "input": {"type": "numeric", "range": [34, 43]},
+      "next": "duration_fever"
+    },
+    "duration_fever": {
+      "type": "question",
+      "text": "Depuis combien de jours la fièvre?",
+      "input": {"type": "numeric", "range": [0, 30]},
+      "next": "other_symptoms"
+    },
+    "other_symptoms": {
+      "type": "multi_select",
+      "text": "Sélectionner les symptômes présents",
+      "options": [
+        {"code": "headache", "label": "Céphalées"},
+        {"code": "chills", "label": "Frissons"},
+        {"code": "vomiting", "label": "Vomissements"},
+        {"code": "diarrhea", "label": "Diarrhée"},
+        {"code": "cough", "label": "Toux"},
+        {"code": "convulsions", "label": "Convulsions"},
+        {"code": "unable_drink", "label": "Incapacité à boire"},
+        {"code": "resp_distress", "label": "Détresse respiratoire"},
+        {"code": "jaundice", "label": "Ictère"},
+        {"code": "altered_consciousness", "label": "Troubles conscience"}
+      ],
+      "next": "rdt_available"
+    },
+    "rdt_available": {
+      "type": "question",
+      "text": "Test RDT disponible?",
+      "input": {"type": "boolean"},
+      "next": {"true": "rdt_result", "false": "evaluate_without_rdt"}
+    },
+    "rdt_result": {
+      "type": "question",
+      "text": "Résultat RDT?",
+      "input": {"type": "single_select", "options": ["positive", "negative", "invalid"]},
+      "next": "severity_check"
+    },
+    "evaluate_without_rdt": {
+      "type": "logic",
+      "rules": [
+        {"if": {"temperature_value": ">=38"}, "score_add": 2},
+        {"if": {"duration_fever": ">=2"}, "score_add": 1},
+        {"if": {"symptom_in": "chills"}, "score_add": 1}
+      ],
+      "next": "severity_check"
+    },
+    "severity_check": {
+      "type": "logic",
+      "rules": [
+        {"if_any_symptom": ["convulsions", "unable_drink", "resp_distress", "altered_consciousness"], "set_flag": "severe_sign"}
+      ],
+      "next": "final_decision"
+    },
+    "final_decision": {
+      "type": "decision",
+      "branches": [
+        {"when_flag": "severe_sign", "outcome": "severe_referral"},
+        {"when": {"rdt_result": "positive"}, "outcome": "uncomplicated"},
+        {"when": {"computed_score": ">=3"}, "outcome": "test_needed"},
+        {"default": true, "outcome": "no_malaria"}
+      ]
+    }
+  },
+  "scoring": {
+    "base": 0,
+    "weights": {
+      "temperature_value": {">=38": 2, ">=39": 3},
+      "duration_fever": {">=2": 1, ">=3": 2},
+      "symptom": {"chills": 1, "headache": 1, "vomiting": 1}
+    }
+  },
+  "explanation_templates": {
+    "uncomplicated": "Fièvre + RDT positif sans signe de gravité.",
+    "severe_referral": "Présence de signe(s) de gravité: référer immédiatement.",
+    "test_needed": "Score clinique élevé sans test: réaliser RDT.",
+    "no_malaria": "Critères insuffisants pour paludisme à ce stade."
+  }
+}

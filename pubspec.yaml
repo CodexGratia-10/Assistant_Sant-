@@ -1,0 +1,24 @@
+name: assistant_sante
+version: 0.1.0
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  sqflite: ^2.3.0
+  path: ^1.8.3
+  collection: ^1.18.0
+  uuid: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - lib/data/db/schema.sql
+    - assets/decision_trees/malaria_tree.json
+    - assets/decision_trees/diarrhea_tree.json
+    - assets/decision_trees/respiratory_tree.json
+    - assets/decision_trees/malnutrition_tree.json
+    - assets/protocols/care_protocols.json
