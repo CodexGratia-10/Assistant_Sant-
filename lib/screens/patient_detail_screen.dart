@@ -5,6 +5,8 @@ import '../data/models/visit.dart';
 import '../data/dao/patient_dao.dart';
 import '../data/dao/visit_dao.dart';
 import 'diagnosis_screen.dart';
+import '../screens/backend_triage_screen.dart';
+import '../config.dart';
 
 class PatientDetailScreen extends StatefulWidget {
   final String patientId;
@@ -153,9 +155,9 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _startNewConsultation,
+        onPressed: _showConsultationModeSelector,
         icon: const Icon(Icons.add),
-        label: const Text('Nouvelle Consultation'),
+        label: const Text('Consultation'),
         backgroundColor: Colors.green,
       ),
     );
@@ -163,5 +165,50 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+  }
+
+  void _showConsultationModeSelector() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Choisir le mode de consultation', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              ListTile(
+                leading: const Icon(Icons.offline_bolt, color: Colors.blue),
+                title: const Text('Diagnostic Local (Arbre embarqué)'),
+                subtitle: const Text('Fonctionne sans connexion'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await _startNewConsultation();
+                },
+              ),
+              if (enableBackendTriage)
+                ListTile(
+                  leading: const Icon(Icons.cloud, color: Colors.teal),
+                  title: const Text('Triage Serveur (Paludisme)'),
+                  subtitle: const Text('Moteur règles côté serveur'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const BackendTriageScreen()),
+                    );
+                    _loadData();
+                  },
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
