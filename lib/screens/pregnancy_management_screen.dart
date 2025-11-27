@@ -123,6 +123,30 @@ class _PregnancyManagementScreenState extends State<PregnancyManagementScreen> {
       padding: const EdgeInsets.all(16),
       children: [
         Card(
+          color: Colors.pink.shade50,
+          margin: const EdgeInsets.only(bottom: 16),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Rappel', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                Text(
+                  'Les dates CPN sont calculées automatiquement à partir de la date des dernières règles (DDR) que vous avez saisie.',
+                  style: TextStyle(color: Colors.grey.shade800),
+                ),
+                const SizedBox(height: 4),
+                if (p.lastMenstrualPeriod != null)
+                  Text(
+                    'DDR: ${_formatDate(p.lastMenstrualPeriod!)} – Terme estimé: ${dueDate != null ? _formatDate(dueDate) : '-'}',
+                    style: TextStyle(color: Colors.grey.shade700, fontSize: 12),
+                  ),
+              ],
+            ),
+          ),
+        ),
+        Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(

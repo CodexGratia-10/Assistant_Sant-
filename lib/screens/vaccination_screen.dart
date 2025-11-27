@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 import '../data/dao/tracking_dao.dart';
 import '../data/dao/patient_dao.dart';
 import '../data/models/vaccination.dart';
 import '../data/models/patient.dart';
 import '../services/vaccination_scheduler.dart';
+import '../data/models/alert.dart';
 
 class VaccinationScreen extends StatefulWidget {
   const VaccinationScreen({super.key});
@@ -26,7 +28,7 @@ class _VaccinationScreenState extends State<VaccinationScreen> {
 
   Future<void> _loadUpcomingVaccinations() async {
     setState(() => _isLoading = true);
-    final pending = await _vaccinationDao.getPending();
+    final pending = await _vaccinationDao.getScheduled();
     final vaccinations = <Map<String, dynamic>>[];
 
     for (final vac in pending) {
@@ -84,10 +86,40 @@ class _VaccinationScreenState extends State<VaccinationScreen> {
       vaccineName: vac.vaccineName,
       dueDate: vac.dueDate,
       administeredDate: DateTime.now(),
-      status: 'done',
+      status: 'administered',
     );
     await _vaccinationDao.update(updated);
     _loadUpcomingVaccinations();
+  }
+
+  Future<void> _replanVaccination(Vaccination vac, {int days=14}) async {
+    final newDue = vac.dueDate.add(Duration(days: days));
+    final updated = Vaccination(
+      id: vac.id,
+      patientId: vac.patientId,
+      vaccineCode: vac.vaccineCode,
+      vaccineName: vac.vaccineName,
+      dueDate: newDue,
+      administeredDate: vac.administeredDate,
+      status: 'scheduled',
+    );
+    await _vaccinationDao.update(updated);
+    // Create/update alert 3 days before new due date
+    final alertDao = AlertDao();
+    final alert = Alert(
+      id: const Uuid().v4(),
+      patientId: vac.patientId,
+      type: 'vaccination',
+      code: 'VACCINE_REPLAN_${vac.vaccineCode}',
+      message: 'Vaccin ${vac.vaccineName} replanifié au ${_formatDate(newDue)}',
+      targetDate: newDue.subtract(const Duration(days: 3)),
+      status: 'pending',
+      createdAt: DateTime.now(),
+    );
+    await alertDao.insert(alert);
+    _loadUpcomingVaccinations();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vaccination replanifiée')));
   }
 
   @override
@@ -112,10 +144,39 @@ class _VaccinationScreenState extends State<VaccinationScreen> {
                 )
               : ListView.builder(
                   padding: const EdgeInsets.all(16),
-                  itemCount: _upcomingVaccinations.length,
+                  itemCount: _upcomingVaccinations.length + 1,
                   itemBuilder: (context, index) {
-                    final vaccination = _upcomingVaccinations[index]['vaccination'] as Vaccination;
-                    final patient = _upcomingVaccinations[index]['patient'] as Patient;
+                    if (index == 0) {
+                      final first = _upcomingVaccinations.first;
+                      final patient = first['patient'] as Patient;
+                      final vac = first['vaccination'] as Vaccination;
+                      final birthDate = vac.dueDate; // simplifié: première date de référence
+                      return Card(
+                        color: Colors.orange.shade50,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('Rappel', style: TextStyle(fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Calendrier calculé automatiquement à partir de la date de naissance saisie.',
+                                style: TextStyle(color: Colors.grey.shade800),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Patient ${patient.id.substring(0, 8)} – date de référence: ${_formatDate(birthDate)}',
+                                style: TextStyle(color: Colors.grey.shade700, fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+                    final vaccination = _upcomingVaccinations[index - 1]['vaccination'] as Vaccination;
+                    final patient = _upcomingVaccinations[index - 1]['patient'] as Patient;
                     return _buildVaccinationCard(vaccination, patient);
                   },
                 ),
@@ -184,6 +245,16 @@ class _VaccinationScreenState extends State<VaccinationScreen> {
                   label: const Text('Administré'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton.icon(
+                  onPressed: () => _replanVaccination(vaccination),
+                  icon: const Icon(Icons.schedule),
+                  label: const Text('Replanifier'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
                   ),
                 ),

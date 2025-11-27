@@ -74,7 +74,7 @@ class VaccinationScheduler {
   }
 
   Future<void> markVaccineAdministered(String vaccinationId) async {
-    final vaccinations = await _vaccinationDao.getPending();
+    final vaccinations = await _vaccinationDao.getScheduled();
     final vaccination = vaccinations.firstWhere((v) => v.id == vaccinationId);
     
     vaccination.administeredDate = DateTime.now();

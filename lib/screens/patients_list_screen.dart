@@ -30,9 +30,9 @@ class _PatientsListScreenState extends State<PatientsListScreen> {
     if (patients.isEmpty) {
       final now = DateTime.now();
       final demoPatients = [
-        Patient(id: const Uuid().v4(), sex: 'F', yearOfBirth: now.year - 25, createdAt: now, updatedAt: now),
-        Patient(id: const Uuid().v4(), sex: 'M', yearOfBirth: now.year - 4, createdAt: now, updatedAt: now),
-        Patient(id: const Uuid().v4(), sex: 'F', yearOfBirth: now.year - 1, createdAt: now, updatedAt: now),
+        Patient(id: const Uuid().v4(), firstName: 'Aïcha', lastName: 'S.', phone: '+22901000001', sex: 'F', yearOfBirth: now.year - 25, createdAt: now, updatedAt: now),
+        Patient(id: const Uuid().v4(), firstName: 'Kossi', lastName: 'T.', phone: '+22901000002', sex: 'M', yearOfBirth: now.year - 4, createdAt: now, updatedAt: now),
+        Patient(id: const Uuid().v4(), firstName: 'Marie', lastName: 'A.', phone: '+22901000003', sex: 'F', yearOfBirth: now.year - 1, createdAt: now, updatedAt: now),
       ];
       for (final p in demoPatients) {
         await _patientDao.insert(p);
@@ -54,6 +54,9 @@ class _PatientsListScreenState extends State<PatientsListScreen> {
     if (result != null) {
       final patient = Patient(
         id: const Uuid().v4(),
+        firstName: result['firstName'],
+        lastName: result['lastName'],
+        phone: result['phone'],
         sex: result['sex'],
         yearOfBirth: result['yearOfBirth'],
         createdAt: DateTime.now(),
@@ -98,9 +101,17 @@ class _PatientsListScreenState extends State<PatientsListScreen> {
                             color: Colors.white,
                           ),
                         ),
-                        title: Text('Patient ${patient.id.substring(0, 8)}'),
+                        title: Text(
+                          (patient.firstName != null || patient.lastName != null)
+                              ? '${patient.firstName ?? ''} ${patient.lastName ?? ''}'.trim()
+                              : 'Patient ${patient.id.substring(0, 8)}',
+                        ),
                         subtitle: Text(
-                          'Année: ${patient.yearOfBirth ?? 'N/A'} • ${patient.sex ?? 'N/A'}',
+                          [
+                            if (patient.phone != null) '📞 ${patient.phone}',
+                            'Année: ${patient.yearOfBirth ?? 'N/A'}',
+                            (patient.sex ?? 'N/A')
+                          ].join(' • '),
                         ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () async {
@@ -136,6 +147,9 @@ class _NewPatientDialog extends StatefulWidget {
 class _NewPatientDialogState extends State<_NewPatientDialog> {
   String? _selectedSex;
   final _yearController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final _phoneController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -144,6 +158,22 @@ class _NewPatientDialogState extends State<_NewPatientDialog> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          TextField(
+            controller: _firstNameController,
+            decoration: const InputDecoration(labelText: 'Prénom'),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _lastNameController,
+            decoration: const InputDecoration(labelText: 'Nom'),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _phoneController,
+            decoration: const InputDecoration(labelText: 'Téléphone'),
+            keyboardType: TextInputType.phone,
+          ),
+          const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             decoration: const InputDecoration(labelText: 'Sexe'),
             value: _selectedSex,
@@ -170,6 +200,9 @@ class _NewPatientDialogState extends State<_NewPatientDialog> {
           onPressed: () {
             final year = int.tryParse(_yearController.text);
             Navigator.pop(context, {
+              'firstName': _firstNameController.text.trim().isEmpty ? null : _firstNameController.text.trim(),
+              'lastName': _lastNameController.text.trim().isEmpty ? null : _lastNameController.text.trim(),
+              'phone': _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
               'sex': _selectedSex,
               'yearOfBirth': year,
             });

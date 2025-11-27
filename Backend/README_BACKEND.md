@@ -14,18 +14,22 @@ Ce backend fournit :
 - Pip / Virtualenv
 - (Optionnel) Postman ou curl pour tester
 
-## 3. Installation
+## 3. Installation (pas à pas, Windows PowerShell)
 ```powershell
-# Depuis le dossier racine du projet ou directement dans Backend/
-cd Backend/Assitant_Sante
+# 1) Aller dans le dossier racine du projet
+cd "C:\Users\danvi\OneDrive\Desktop\Hackaton de Grace"
 
+# 2) Entrer dans le dossier du backend Django
+cd Backend\Assitant_Sante
+
+# 3) Créer et activer un environnement virtuel Python
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 
-# Installer dépendances
+# 4) Installer les dépendances du backend
 pip install -r ..\requirements.txt
 
-# Appliquer migrations
+# 5) Appliquer les migrations
 python manage.py migrate
 ```
 
@@ -39,13 +43,31 @@ En production, définir `DJANGO_DEBUG=False` et fournir une vraie clé secrète.
 
 ## 5. Lancement du serveur
 ```powershell
-python manage.py runserver 0.0.0.0:8000
+# Depuis le dossier Backend\Assitant_Sante avec l'environnement virtuel activé
+python manage.py runserver 
+Ou python manage.py runserver 0.0.0.0:8000
 ```
 - API racine: `http://localhost:8000/api/`
 - Swagger: `http://localhost:8000/schema/swagger-ui/`
 - Redoc: `http://localhost:8000/redoc/`
 
 Sur émulateur Android, l’app Flutter utilise `http://10.0.2.2:8000/api`.
+Sur desktop/web ou appareil physique, adaptez `lib/config.dart` pour pointer vers `http://localhost:8000/api` ou l’IP locale de votre machine.
+
+### Astuce: script rapide (optionnel)
+Créez un fichier `run_backend.ps1` dans `Backend\Assitant_Sante` avec:
+```powershell
+$venv = ".\.venv\Scripts\Activate.ps1"
+if (Test-Path $venv) { . $venv } else { python -m venv .venv; . $venv }
+pip install -r ..\requirements.txt
+python manage.py migrate
+python manage.py runserver 0.0.0.0:8000
+```
+Puis lancez:
+```powershell
+cd Backend\Assitant_Sante
+powershell -ExecutionPolicy Bypass -File .\run_backend.ps1
+```
 
 ## 6. Endpoints principaux
 | Ressource | Méthode | URL | Description |
@@ -118,6 +140,13 @@ Ou final :
 4. En mode serveur : les questions viennent du backend, chaque réponse met à jour l’aperçu des hypothèses.
 5. Fin : recommandations + éventuelle posologie ACT calculée.
 
+### Lancer le frontend (rappel)
+```powershell
+cd "C:\Users\danvi\OneDrive\Desktop\Hackaton de Grace"
+flutter pub get
+flutter run
+```
+
 ## 9. CORS & Accès
 - `django-cors-headers` activé.
 - En debug: `CORS_ALLOW_ALL_ORIGINS = True` (ne pas conserver en prod).
@@ -139,6 +168,12 @@ from apps.models import BaseRelais, Patient
 r = BaseRelais.objects.create(nom="Relais 1", village="Kouandé", telephone="+229000000")
 p = Patient.objects.create(nom="Test", age=7, sexe="M", village="Kouandé", relais=r)
 ```
+
+## 14. Dépannage (FAQ rapide)
+- Erreur CORS: en dev `CORS_ALLOW_ALL_ORIGINS = True` est activé. En prod, configurez `CORS_ALLOWED_ORIGINS`.
+- Accès depuis émulateur Android: utilisez `10.0.2.2` au lieu de `localhost`.
+- Port déjà utilisé: changez le port `python manage.py runserver 0.0.0.0:8001` et mettez à jour `lib/config.dart`.
+- Paquets manquants: lancez `pip install -r ..\requirements.txt` après avoir activé `.venv`.
 
 ## 12. Sécurité (à renforcer)
 - Secret key via env OK.

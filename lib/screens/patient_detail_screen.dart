@@ -6,6 +6,7 @@ import '../data/dao/patient_dao.dart';
 import '../data/dao/visit_dao.dart';
 import 'diagnosis_screen.dart';
 import '../screens/backend_triage_screen.dart';
+import '../screens/visit_detail_screen.dart';
 import '../config.dart';
 
 class PatientDetailScreen extends StatefulWidget {
@@ -101,7 +102,14 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('ID: ${_patient!.id.substring(0, 13)}...', style: const TextStyle(fontSize: 12)),
+                          Text(
+                            (_patient!.firstName != null || _patient!.lastName != null)
+                                ? '${_patient!.firstName ?? ''} ${_patient!.lastName ?? ''}'.trim()
+                                : 'ID: ${_patient!.id.substring(0, 13)}...',
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          if (_patient!.phone != null)
+                            Text('📞 ${_patient!.phone}', style: const TextStyle(fontSize: 14)),
                           Text('Sexe: ${_patient!.sex ?? 'N/A'}', style: const TextStyle(fontSize: 16)),
                           Text('Année: ${_patient!.yearOfBirth ?? 'N/A'}', style: const TextStyle(fontSize: 16)),
                         ],
@@ -139,7 +147,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                             visit.referralFlag ? Icons.local_hospital : Icons.assignment,
                             color: visit.referralFlag ? Colors.red : Colors.green,
                           ),
-                          title: Text('Consultation - ${visit.visitType ?? 'N/A'}'),
+                          title: Text('Consultation ${_visits.length - index}'),
                           subtitle: Text(_formatDate(visit.startedAt)),
                           trailing: visit.outcome != null
                               ? Chip(
@@ -147,6 +155,14 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                                   backgroundColor: visit.referralFlag ? Colors.red.shade100 : Colors.green.shade100,
                                 )
                               : null,
+                          onTap: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => VisitDetailScreen(visitId: visit.id),
+                              ),
+                            );
+                          },
                         ),
                       );
                     },
@@ -200,7 +216,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                     Navigator.pop(context);
                     await Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const BackendTriageScreen()),
+                      MaterialPageRoute(builder: (context) => BackendTriageScreen(patientId: widget.patientId)),
                     );
                     _loadData();
                   },

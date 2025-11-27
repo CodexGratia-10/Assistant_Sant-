@@ -80,3 +80,26 @@ app.*.map.json
 *.db
 *.sqlite
 *.sqlite3
+
+# Python/Django (backend) - virtualenvs, caches, coverage, local settings
+**/__pycache__/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.coverage
+**/coverage.xml
+**/htmlcov/
+**/.env
+**/.env.*
+
+# Backend virtual environments (common names)
+Backend/**/.venv/
+Backend/**/venv/
+Backend/**/env/
+backend/**/.venv/
+backend/**/venv/
+backend/**/env/
+
+# Django collectstatic output (if ever used)
+Backend/**/staticfiles/
+backend/**/staticfiles/

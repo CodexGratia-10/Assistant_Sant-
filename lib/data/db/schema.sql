@@ -3,6 +3,9 @@
 
 CREATE TABLE IF NOT EXISTS patient (
   id TEXT PRIMARY KEY, -- UUID pseudo-anonyme
+  first_name TEXT,
+  last_name TEXT,
+  phone TEXT,
   sex TEXT CHECK(sex IN ('M','F')),
   year_of_birth INTEGER, -- année pour réduire PII
   created_at INTEGER NOT NULL,

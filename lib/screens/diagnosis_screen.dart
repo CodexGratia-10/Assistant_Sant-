@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import '../data/decision_tree/decision_tree.dart';
+import 'package:uuid/uuid.dart';
+import '../data/dao/visit_dao.dart';
+import '../data/dao/observation_dao.dart';
+import '../data/models/symptom_observation.dart';
+import '../data/models/visit.dart';
 
 class DiagnosisScreen extends StatefulWidget {
   final String patientId;
@@ -23,6 +28,8 @@ class _DiagnosisScreenState extends State<DiagnosisScreen> {
   final List<Map<String, dynamic>> _conversationHistory = [];
   bool _isComplete = false;
   Map<String, dynamic>? _finalOutcome;
+  final ObservationDao _observationDao = ObservationDao();
+  final VisitDao _visitDao = VisitDao();
 
   @override
   void initState() {
@@ -67,7 +74,58 @@ class _DiagnosisScreenState extends State<DiagnosisScreen> {
       'question': _getCurrentNode()['text'],
       'answer': answer,
     });
+    _persistAnswer(questionId, answer);
     _moveToNext();
+  }
+
+  Future<void> _persistAnswer(String code, dynamic answer) async {
+    try {
+      if (widget.visitId.isEmpty) return;
+      final now = DateTime.now();
+      if (answer is bool) {
+        final obs = SymptomObservation(
+          id: const Uuid().v4(),
+          visitId: widget.visitId,
+          code: code,
+          value: answer ? 'yes' : 'no',
+          numericValue: null,
+          capturedAt: now,
+        );
+        await _observationDao.insertSymptom(obs);
+      } else if (answer is num) {
+        final obs = SymptomObservation(
+          id: const Uuid().v4(),
+          visitId: widget.visitId,
+          code: code,
+          value: null,
+          numericValue: answer.toDouble(),
+          capturedAt: now,
+        );
+        await _observationDao.insertSymptom(obs);
+      } else if (answer is List) {
+        for (final sel in answer) {
+          final obs = SymptomObservation(
+            id: const Uuid().v4(),
+            visitId: widget.visitId,
+            code: sel.toString(),
+            value: 'selected',
+            numericValue: null,
+            capturedAt: now,
+          );
+          await _observationDao.insertSymptom(obs);
+        }
+      } else {
+        final obs = SymptomObservation(
+          id: const Uuid().v4(),
+          visitId: widget.visitId,
+          code: code,
+          value: answer.toString(),
+          numericValue: null,
+          capturedAt: now,
+        );
+        await _observationDao.insertSymptom(obs);
+      }
+    } catch (_) {}
   }
 
   void _moveToNext() {
@@ -137,11 +195,32 @@ class _DiagnosisScreenState extends State<DiagnosisScreen> {
   void _completeEvaluation(String? outcomeKey) {
     final engine = DecisionEngine(_tree!);
     final outcome = engine.evaluate(_context);
-    
+    // Persist visit completion
+    _finalizeVisit(outcome);
     setState(() {
       _isComplete = true;
       _finalOutcome = outcome;
     });
+  }
+
+  Future<void> _finalizeVisit(Map<String, dynamic> outcome) async {
+    try {
+      final existing = await _visitDao.getById(widget.visitId);
+      if (existing != null) {
+        final urgency = (outcome['urgency'] as String?) ?? 'low';
+        final updated = Visit(
+          id: existing.id,
+          patientId: existing.patientId,
+          visitType: existing.visitType,
+          startedAt: existing.startedAt,
+          completedAt: DateTime.now(),
+          outcome: (outcome['label'] as String?) ?? existing.outcome,
+          referralFlag: urgency == 'high',
+          syncStatus: existing.syncStatus,
+        );
+        await _visitDao.update(updated);
+      }
+    } catch (_) {}
   }
 
   Map<String, dynamic> _getCurrentNode() {

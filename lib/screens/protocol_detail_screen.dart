@@ -8,6 +8,9 @@ class ProtocolDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String cleaned = protocol.content
+        .replaceAll(RegExp(r'^\s*[\*\-]\s+', multiLine: true), '')
+        .replaceAll(RegExp(r'\n{3,}', multiLine: true), '\n\n');
     return Scaffold(
       appBar: AppBar(
         title: Text(protocol.title),
@@ -69,7 +72,7 @@ class ProtocolDetailScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
-                protocol.content,
+                cleaned,
                 style: const TextStyle(
                   fontSize: 15,
                   height: 1.6,

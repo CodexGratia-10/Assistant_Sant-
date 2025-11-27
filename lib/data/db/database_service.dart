@@ -20,8 +20,9 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
       },
@@ -35,6 +36,23 @@ class DatabaseService {
     
     for (final statement in statements) {
       await db.execute(statement.trim());
+    }
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // Add patient demographic fields if missing
+      await _addColumnIfMissing(db, 'patient', 'first_name', 'TEXT');
+      await _addColumnIfMissing(db, 'patient', 'last_name', 'TEXT');
+      await _addColumnIfMissing(db, 'patient', 'phone', 'TEXT');
+    }
+  }
+
+  Future<void> _addColumnIfMissing(Database db, String table, String column, String type) async {
+    final info = await db.rawQuery('PRAGMA table_info($table)');
+    final exists = info.any((row) => (row['name'] as String?) == column);
+    if (!exists) {
+      await db.execute('ALTER TABLE $table ADD COLUMN $column $type');
     }
   }
 

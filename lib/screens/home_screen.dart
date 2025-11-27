@@ -4,9 +4,32 @@ import 'protocols_list_screen.dart';
 import 'pregnancy_screen.dart';
 import 'vaccination_screen.dart';
 import 'alerts_screen.dart';
+import '../data/dao/tracking_dao.dart';
+import '../config.dart';
+import 'backend_triage_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _pendingAlerts = 0;
+  final AlertDao _alertDao = AlertDao();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBadges();
+  }
+
+  Future<void> _loadBadges() async {
+    final count = await _alertDao.getAllPendingCount();
+    if (!mounted) return;
+    setState(() => _pendingAlerts = count);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,13 +55,17 @@ class HomeScreen extends StatelessWidget {
                 MaterialPageRoute(builder: (context) => const PatientsListScreen()),
               ),
             ),
-            _buildActionCard(
-              context,
-              title: 'Nouvelle\nConsultation',
-              icon: Icons.medical_services,
-              color: Colors.green,
-              onTap: () => _showPatientSelectionForConsultation(context),
-            ),
+            if (enableBackendTriage)
+              _buildActionCard(
+                context,
+                title: 'Autres\nConsultations',
+                icon: Icons.chat_bubble,
+                color: Colors.teal,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const BackendTriageScreen()),
+                ),
+              ),
             _buildActionCard(
               context,
               title: 'Suivi\nGrossesse',
@@ -77,7 +104,8 @@ class HomeScreen extends StatelessWidget {
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const AlertsScreen()),
-              ),
+              ).then((_) => _loadBadges()),
+              badgeCount: _pendingAlerts,
             ),
           ],
         ),
@@ -91,42 +119,45 @@ class HomeScreen extends StatelessWidget {
     required IconData icon,
     required Color color,
     required VoidCallback onTap,
+    int badgeCount = 0,
   }) {
     return Card(
       elevation: 4,
       child: InkWell(
         onTap: onTap,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
           children: [
-            Icon(icon, size: 64, color: color),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, size: 64, color: color),
+                  const SizedBox(height: 12),
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
             ),
+            if (badgeCount > 0)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(12)),
+                  child: Text(
+                    '$badgeCount',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
     );
   }
 
-  void _showPatientSelectionForConsultation(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Nouvelle Consultation'),
-        content: const Text(
-          'Veuillez d\'abord sélectionner un patient depuis l\'écran Patients, puis lancer une consultation depuis sa fiche.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
 }

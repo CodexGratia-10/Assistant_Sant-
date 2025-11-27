@@ -64,10 +64,10 @@ class VaccinationDao {
     return maps.map((m) => Vaccination.fromMap(m)).toList();
   }
 
-  Future<List<Vaccination>> getPending() async {
+  Future<List<Vaccination>> getScheduled() async {
     final db = await _dbService.database;
     final maps = await db.query('vaccination',
-        where: 'status = ?', whereArgs: ['pending'], orderBy: 'due_date ASC');
+        where: 'status = ?', whereArgs: ['scheduled'], orderBy: 'due_date ASC');
     return maps.map((m) => Vaccination.fromMap(m)).toList();
   }
 
@@ -131,6 +131,22 @@ class AlertDao {
         where: 'patient_id = ? AND category = ? AND target_date >= ? AND status = ?',
         whereArgs: [patientId, type, now, 'pending'],
         orderBy: 'target_date ASC');
+    return maps.map((m) => Alert.fromMap(m)).toList();
+  }
+
+  Future<int> getAllPendingCount() async {
+    final db = await _dbService.database;
+    final maps = await db.rawQuery(
+        "SELECT COUNT(*) as c FROM alert WHERE status = ?",
+        ['pending']);
+    if (maps.isEmpty) return 0;
+    return (maps.first['c'] as int?) ?? 0;
+  }
+
+  Future<List<Alert>> getAllPending() async {
+    final db = await _dbService.database;
+    final maps = await db.query('alert',
+        where: 'status = ?', whereArgs: ['pending'], orderBy: 'target_date ASC');
     return maps.map((m) => Alert.fromMap(m)).toList();
   }
 }
